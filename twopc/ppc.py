@@ -448,7 +448,7 @@ class PPCDetector(object):
 
         self._obs_cum_rate = (self._obs_counts[self._mask] - self._scale_factor * self._obs_background[self._mask]).cumsum()
 
-        self._ppc_cum_rate = (self._ppc_counts[self._mask] - self._scale_factor * self._ppc_background[self._mask]).cumsum(axis=1)
+        self._ppc_cum_rate = (self._ppc_counts[:,self._mask] - self._scale_factor * self._ppc_background[:,self._mask]).cumsum(axis=1)
 
 
     def _compute_qq_level(self, level):
