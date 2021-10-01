@@ -70,7 +70,7 @@ def compute_postpc(analysis: BayesianAnalysis,
                     'obs_counts', data=data.observed_counts, compression='lzf')
                 grp.create_dataset(
                     'bkg_counts', data=data.background_counts, compression='lzf')
-                grp.create_dataset('mask', data=data.mask, compression='lzf')
+            grp.create_dataset('mask', data=data.mask, compression='lzf')
 
             # make sure we are on the right model
             
@@ -102,7 +102,7 @@ def compute_postpc(analysis: BayesianAnalysis,
 
                 # set the analysis free parameters to the value of the posterior
 
-                analysis.likelihood_model.set_free_parameters(params)
+                model_from_results.set_free_parameters(params)
 
                 # for i, (k, v) in enumerate(analysis.likelihood_model.free_parameters.items()):
                 #     v.value = params[i]
@@ -126,12 +126,9 @@ def compute_postpc(analysis: BayesianAnalysis,
 
             data.set_model(previous_model)
 
-            
+    if return_ppc:
 
-                
-        if return_ppc:
-
-            return PPC(file_name)
+        return PPC(file_name)
 
 
 def compute_priorpc(analysis: BayesianAnalysis,
@@ -199,7 +196,7 @@ def compute_priorpc(analysis: BayesianAnalysis,
                     'obs_counts', data=data.observed_counts, compression='gzip')
                 grp.create_dataset(
                     'bkg_counts', data=data.background_counts, compression='gzip')
-                grp.create_dataset('mask', data=data.mask, compression='gzip')
+            grp.create_dataset('mask', data=data.mask, compression='gzip')
 
         # select random draws from the posterior
 
@@ -237,10 +234,10 @@ def compute_priorpc(analysis: BayesianAnalysis,
                                            j, data=data.get_model(), compression='gzip')
                         grp.create_dataset('ppc_background_counts_%d' %
                                            j, data=data.background_counts, compression='gzip')
-            # sim_dls.append(sim_dl)
-        if return_ppc:
 
-            return PPC(file_name)
+    if return_ppc:
+
+        return PPC(file_name)
 
         
 
@@ -449,9 +446,9 @@ class PPCDetector(object):
 
     def _compute_qq(self) -> None:
 
-        self._obs_cum_rate = (self._obs_counts - self._scale_factor * self._obs_background).cumsum()
+        self._obs_cum_rate = (self._obs_counts[self._mask] - self._scale_factor * self._obs_background[self._mask]).cumsum()
 
-        self._ppc_cum_rate = (self._ppc_counts - self._scale_factor * self._ppc_background).cumsum(axis=1)
+        self._ppc_cum_rate = (self._ppc_counts[self._mask] - self._scale_factor * self._ppc_background[self._mask]).cumsum(axis=1)
 
 
     def _compute_qq_level(self, level):
@@ -466,7 +463,7 @@ class PPCDetector(object):
 
         low, high = self._compute_qq_level(level)
 
-        idx = np.logical_or(self._obs_cum_rate < low, high< self._obs_cum_rate)
+        idx = np.logical_or(self._obs_cum_rate < low, high < self._obs_cum_rate)
 
         flag = False
 
